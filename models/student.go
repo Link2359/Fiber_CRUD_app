@@ -20,3 +20,11 @@ type CreateStudentRequest struct {
 	Department   string `json:"department"`
 	MobileNo     string `json:"mobile_no"`
 }
+
+type UpdateStudentRequest struct {
+	Name         *string `json:"name"`
+	EnrollmentNo *string `json:"enrollment_no"`
+	YearOfStudy  *int    `json:"year_of_study"`
+	Department   *string `json:"department"`
+	MobileNo     *string `json:"mobile_no"`
+}

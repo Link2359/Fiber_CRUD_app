@@ -11,7 +11,6 @@ func main() {
 
 	database.Connect()
 
-
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -19,10 +18,12 @@ func main() {
 	})
 
 	students := app.Group("/students")
-	
+
 	students.Get("/read/", handlers.GetAllStudents)
 	students.Get("/read/:id", handlers.GetStudent)
 	students.Post("/create/", handlers.CreateStudent)
+	students.Delete("/delete/:id", handlers.DeleteStudent)
+	students.Patch("/update/:id", handlers.UpdateStudent)
 
 	app.Listen(":3000")
 }
