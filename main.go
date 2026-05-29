@@ -1,14 +1,21 @@
- 
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"fiber-app/database"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 func main() {
-    app := fiber.New()
 
-    app.Get("/", func(c *fiber.Ctx) error {
-        return c.SendString("Welcome to my Fiber app!")
-    })
+	database.Connect()
 
-    app.Listen(":3000")
+
+	app := fiber.New()
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Home Page")
+	})
+
+	app.Listen(":3000")
 }
