@@ -3,11 +3,17 @@ package main
 import (
 	"fiber-app/database"
 	"fiber-app/handlers"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
 
 	database.Connect()
 

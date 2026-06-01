@@ -1,17 +1,29 @@
 package database
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"fiber-app/models"
-	"gorm.io/driver/sqlite"
+
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 func Connect() {
-	db, err := gorm.Open(sqlite.Open("fiber.db"), &gorm.Config{})
+	dsn := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
@@ -20,4 +32,4 @@ func Connect() {
 
 	log.Println("Database connected successfully!")
 	DB = db
-} 
+}

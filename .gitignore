@@ -1,2 +1,5 @@
 #Databases
 *.db
+
+#Environment Variables
+.env
