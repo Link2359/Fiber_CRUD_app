@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fiber-app/database"
+	"fiber-app/repository"
 	"fiber-app/models"
 	"fiber-app/validators"
 
@@ -19,19 +19,8 @@ func GetAllStudents(c *fiber.Ctx) error {
 		})
 	}
 
-	offset := (page - 1) * limit
-
-	var total int64
-	database.DB.Model(&models.Student{}).Count(&total)
-
-	var students []models.Student
-	result := database.DB.
-		Order("id ASC").
-		Offset(offset).
-		Limit(limit).
-		Find(&students)
-
-	if result.Error != nil {
+	students, total, err := repository.GetAllStudents(page, limit)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch students",
 		})
@@ -50,10 +39,9 @@ func GetAllStudents(c *fiber.Ctx) error {
 
 func GetStudent(c *fiber.Ctx) error {
 	id := c.Params("id")
-	var student models.Student
-
-	result := database.DB.First(&student, id)
-	if result.Error != nil {
+	
+	student, err := repository.GetStudentByID(id)
+	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Student not found",
 		})
@@ -78,16 +66,8 @@ func CreateStudent(c *fiber.Ctx) error {
 		})
 	}
 
-	student := models.Student{
-		Name:         req.Name,
-		EnrollmentNo: req.EnrollmentNo,
-		YearOfStudy:  req.YearOfStudy,
-		Department:   req.Department,
-		MobileNo:     req.MobileNo,
-	}
-
-	result := database.DB.Create(&student)
-	if result.Error != nil {
+	student, err := repository.CreateStudent(req)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create student",
 		})
@@ -98,16 +78,19 @@ func CreateStudent(c *fiber.Ctx) error {
 
 func DeleteStudent(c *fiber.Ctx) error {
 	id := c.Params("id")
-	var student models.Student
-
-	result := database.DB.First(&student, id)
-	if result.Error != nil {
+	
+	student, err := repository.GetStudentByID(id)
+	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Student not found",
 		})
 	}
 
-	database.DB.Delete(&student)
+	if err := repository.DeleteStudent(student); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete student",
+		})
+	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Student deleted successfully",
@@ -117,10 +100,9 @@ func DeleteStudent(c *fiber.Ctx) error {
 
 func UpdateStudent(c *fiber.Ctx) error {
 	id := c.Params("id")
-	var student models.Student
 
-	result := database.DB.First(&student, id)
-	if result.Error != nil {
+	student, err := repository.GetStudentByID(id)
+	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "Student not found",
 		})
@@ -140,36 +122,20 @@ func UpdateStudent(c *fiber.Ctx) error {
 		})
 	}
 
-	if req.EnrollmentNo != nil {
-    	var existing models.Student
-    	result := database.DB.Where("enrollment_no = ? AND id != ?", *req.EnrollmentNo, student.ID).First(&existing)
-    	if result.Error == nil {
-        	return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-            	"error": "Enrollment number already taken",
-        	})
-    	}
+	if req.EnrollmentNo != nil && repository.IsEnrollmentNoTaken(*req.EnrollmentNo, student.ID) {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+			"error": "Enrollment number already taken",
+		})
 	}
 
-	updates := map[string]any{}
-	if req.Name != nil {
-		updates["name"] = *req.Name
-	}
-	if req.EnrollmentNo != nil {
-		updates["enrollment_no"] = *req.EnrollmentNo
-	}
-	if req.YearOfStudy != nil {
-		updates["year_of_study"] = *req.YearOfStudy
-	}
-	if req.Department != nil {
-		updates["department"] = *req.Department
-	}
-	if req.MobileNo != nil {
-		updates["mobile_no"] = *req.MobileNo
+	updated, err := repository.UpdateStudent(student, req)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to update student",
+		})
 	}
 
-	database.DB.Model(&student).Updates(updates)
-
-	return c.Status(fiber.StatusOK).JSON(student)
+	return c.Status(fiber.StatusOK).JSON(updated)
 }
 
 
