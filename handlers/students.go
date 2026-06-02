@@ -3,6 +3,7 @@ package handlers
 import (
 	"fiber-app/database"
 	"fiber-app/models"
+	"fiber-app/validators"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,15 +12,10 @@ func GetAllStudents(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 5)
 
-	if page < 1 {
+	if err := validators.ValidatePagination(page, limit); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "page must be greater than 0",
-		})
-	}
-
-	if limit < 1 || limit > 100 || limit % 5 != 0{
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "limit must be a multiple of 5 between 1 and 100",
+			"error": err.Message,
+			"field": err.Field,
 		})
 	}
 
@@ -75,27 +71,10 @@ func CreateStudent(c *fiber.Ctx) error {
 		})
 	}
 
-	if req.Name == "" || req.EnrollmentNo == "" || req.Department == "" || req.MobileNo == "" {
+	if err := validators.ValidateCreateStudent(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Name, EnrollmentNo, Department and MobileNo are required fields",
-		})
-	}
-
-	if len(req.EnrollmentNo) != 6 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Enrollment number must be exactly 6 characters",
-		})
-	}
-
-	if len(req.MobileNo) != 10 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Mobile number must be exactly 10 characters",
-		})
-	}
-
-	if req.YearOfStudy < 1 || req.YearOfStudy > 4 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Year of Study must be between 1 and 4",
+			"error": err.Message,
+			"field": err.Field,
 		})
 	}
 
@@ -154,9 +133,10 @@ func UpdateStudent(c *fiber.Ctx) error {
 		})
 	}
 
-	if req.EnrollmentNo != nil && len(*req.EnrollmentNo) != 6 {
+	if err := validators.ValidateUpdateStudent(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Enrollment number must be exactly 6 characters",
+			"error": err.Message,
+			"field": err.Field,
 		})
 	}
 
@@ -168,18 +148,6 @@ func UpdateStudent(c *fiber.Ctx) error {
             	"error": "Enrollment number already taken",
         	})
     	}
-	}
-
-	if req.MobileNo != nil && len(*req.MobileNo) != 10 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Mobile number must be exactly 10 digits",
-		})
-	}
-
-	if req.YearOfStudy != nil && (*req.YearOfStudy < 1 || *req.YearOfStudy > 4) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Year of study must be between 1 and 4",
-		})
 	}
 
 	updates := map[string]any{}
