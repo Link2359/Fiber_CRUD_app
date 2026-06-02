@@ -16,6 +16,10 @@ func ValidateCreateStudent(req *models.CreateStudentRequest) *ValidationError {
 		return &ValidationError{Field: "name", Message: "name is required"}
 	}
 
+	if len(req.Name) > 100 {
+		return &ValidationError{Field: "name", Message: "name must be less than 100 characters"}
+	}
+
 	if req.EnrollmentNo == "" {
 		return &ValidationError{Field: "enrollment_no", Message: "enrollment number is required"}
 	}
@@ -26,6 +30,10 @@ func ValidateCreateStudent(req *models.CreateStudentRequest) *ValidationError {
 
 	if req.Department == "" {
 		return &ValidationError{Field: "department", Message: "department is required"}
+	}
+	
+	if len(req.Department) > 30 {
+		return &ValidationError{Field: "department", Message: "department must be less than 30 characters"}
 	}
 
 	if req.MobileNo == "" {
@@ -44,6 +52,14 @@ func ValidateCreateStudent(req *models.CreateStudentRequest) *ValidationError {
 }
 
 func ValidateUpdateStudent(req *models.UpdateStudentRequest) *ValidationError {
+	if req.Name != nil && len(*req.Name) > 100 {
+		return &ValidationError{Field: "name", Message: "name must be less than 100 characters"}
+	}
+
+	if req.Department !=nil && len(*req.Department) > 30 {
+		return &ValidationError{Field: "department", Message: "department must be less than 30 characters"}
+	}
+
 	if req.EnrollmentNo != nil && len(*req.EnrollmentNo) != 6 {
 		return &ValidationError{Field: "enrollment_no", Message: "enrollment number must be exactly 6 characters"}
 	}
