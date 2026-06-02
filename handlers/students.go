@@ -8,18 +8,47 @@ import (
 )
 
 func GetAllStudents(c *fiber.Ctx) error {
-	var students []models.Student
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 5)
 
-	result := database.DB.Find(&students)
+	if page < 1 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "page must be greater than 0",
+		})
+	}
+
+	if limit < 1 || limit > 100 || limit % 5 != 0{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "limit must be a multiple of 5 between 1 and 100",
+		})
+	}
+
+	offset := (page - 1) * limit
+
+	var total int64
+	database.DB.Model(&models.Student{}).Count(&total)
+
+	var students []models.Student
+	result := database.DB.
+		Order("id ASC").
+		Offset(offset).
+		Limit(limit).
+		Find(&students)
+
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch students",
 		})
 	}
 
+	totalPages := (int(total) + limit - 1) / limit
+
 	return c.JSON(fiber.Map{
-		"data":  students,
-		"count": len(students),
+		"data":        students,
+		"total":       total,
+		"page":        page,
+		"limit":       limit,
+		"total_pages": totalPages,
 	})
 }
 
