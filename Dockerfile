@@ -23,6 +23,7 @@ WORKDIR /app
 # Copy only the built binary from stage 1
 COPY --from=builder /app/main .
 COPY --from=builder /app/.env .
+COPY --from=builder /app/migrations ./migrations
 
 EXPOSE 3000
 
