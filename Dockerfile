@@ -1,5 +1,5 @@
 # Stage 1 — Build the app
-FROM golang:1.23.3-alpine AS builder
+FROM golang:1.25.0-alpine AS builder
 
 WORKDIR /app
 
@@ -23,6 +23,7 @@ WORKDIR /app
 # Copy only the built binary from stage 1
 COPY --from=builder /app/main .
 COPY --from=builder /app/.env .
+COPY --from=builder /app/migrations ./migrations
 
 EXPOSE 3000
 
