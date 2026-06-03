@@ -1,9 +1,20 @@
 package repository
 
 import (
+	"errors"
 	"fiber-app/database"
 	"fiber-app/models"
 )
+
+var ErrEnrollmentNoTaken = errors.New("enrollment number already taken")
+
+func IsEnrollmentNoTaken(enrollmentNo string, excludeID uint) bool {
+	var existing models.Student
+	result := database.DB.
+		Where("enrollment_no = ? AND id != ?", enrollmentNo, excludeID).
+		First(&existing)
+	return result.Error == nil
+}
 
 func GetAllStudents(page int, limit int) ([]models.Student, int64, error) {
 	var students []models.Student
@@ -38,6 +49,11 @@ func GetStudentByID(id string) (*models.Student, error) {
 }
 
 func CreateStudent(req *models.CreateStudentRequest) (*models.Student, error) {
+
+	if IsEnrollmentNoTaken(req.EnrollmentNo, 0) {
+		return nil, ErrEnrollmentNoTaken
+	}
+
 	student := models.Student{
 		Name:         req.Name,
 		EnrollmentNo: req.EnrollmentNo,
@@ -52,14 +68,6 @@ func CreateStudent(req *models.CreateStudentRequest) (*models.Student, error) {
 	}
 
 	return &student, nil
-}
-
-func IsEnrollmentNoTaken(enrollmentNo string, excludeID uint) bool {
-	var existing models.Student
-	result := database.DB.
-		Where("enrollment_no = ? AND id != ?", enrollmentNo, excludeID).
-		First(&existing)
-	return result.Error == nil
 }
 
 func UpdateStudent(student *models.Student, req *models.UpdateStudentRequest) (*models.Student, error) {

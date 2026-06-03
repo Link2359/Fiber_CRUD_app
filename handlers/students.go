@@ -59,7 +59,7 @@ func CreateStudent(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := validators.ValidateCreateStudent(req); err != nil {
+	if err := validators.ValidateStruct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Message,
 			"field": err.Field,
@@ -68,6 +68,11 @@ func CreateStudent(c *fiber.Ctx) error {
 
 	student, err := repository.CreateStudent(req)
 	if err != nil {
+		if err == repository.ErrEnrollmentNoTaken {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"error": "Enrollment number already taken",
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create student",
 		})
@@ -114,7 +119,7 @@ func UpdateStudent(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := validators.ValidateUpdateStudent(req); err != nil {
+	if err := validators.ValidateStruct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Message,
 			"field": err.Field,
