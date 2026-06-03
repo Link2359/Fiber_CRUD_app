@@ -11,7 +11,7 @@ func GetAllStudents(page int, limit int) ([]models.Student, int64, error) {
 
 	database.DB.Model(&models.Student{}).Count(&total)
 
-	offset := (page-1) * limit
+	offset := (page - 1) * limit
 
 	result := database.DB.
 		Order("id ASC").

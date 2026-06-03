@@ -31,7 +31,7 @@ func ValidateCreateStudent(req *models.CreateStudentRequest) *ValidationError {
 	if req.Department == "" {
 		return &ValidationError{Field: "department", Message: "department is required"}
 	}
-	
+
 	if len(req.Department) > 30 {
 		return &ValidationError{Field: "department", Message: "department must be less than 30 characters"}
 	}
@@ -56,7 +56,7 @@ func ValidateUpdateStudent(req *models.UpdateStudentRequest) *ValidationError {
 		return &ValidationError{Field: "name", Message: "name must be less than 100 characters"}
 	}
 
-	if req.Department !=nil && len(*req.Department) > 30 {
+	if req.Department != nil && len(*req.Department) > 30 {
 		return &ValidationError{Field: "department", Message: "department must be less than 30 characters"}
 	}
 

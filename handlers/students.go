@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"fiber-app/repository"
 	"fiber-app/models"
+	"fiber-app/repository"
 	"fiber-app/validators"
 
 	"github.com/gofiber/fiber/v2"
@@ -39,7 +39,7 @@ func GetAllStudents(c *fiber.Ctx) error {
 
 func GetStudent(c *fiber.Ctx) error {
 	id := c.Params("id")
-	
+
 	student, err := repository.GetStudentByID(id)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -78,7 +78,7 @@ func CreateStudent(c *fiber.Ctx) error {
 
 func DeleteStudent(c *fiber.Ctx) error {
 	id := c.Params("id")
-	
+
 	student, err := repository.GetStudentByID(id)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -96,7 +96,6 @@ func DeleteStudent(c *fiber.Ctx) error {
 		"message": "Student deleted successfully",
 	})
 }
-
 
 func UpdateStudent(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -137,5 +136,3 @@ func UpdateStudent(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(updated)
 }
-
-
