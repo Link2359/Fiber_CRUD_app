@@ -19,21 +19,24 @@ func GetAllStudents(c *fiber.Ctx) error {
 		})
 	}
 
-	students, total, err := repository.GetAllStudents(page, limit)
+	students, err := repository.GetAllStudents(page, limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch students",
 		})
 	}
 
-	totalPages := (int(total) + limit - 1) / limit
+	hasMore := len(students) > limit
+
+	if hasMore {
+		students = students[:limit]
+	}
 
 	return c.JSON(fiber.Map{
-		"data":        students,
-		"total":       total,
-		"page":        page,
-		"limit":       limit,
-		"total_pages": totalPages,
+		"data":    students,
+		"page":    page,
+		"limit":   limit,
+		"HasMore": hasMore,
 	})
 }
 

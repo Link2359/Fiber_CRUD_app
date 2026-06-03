@@ -16,25 +16,22 @@ func IsEnrollmentNoTaken(enrollmentNo string, excludeID uint) bool {
 	return result.Error == nil
 }
 
-func GetAllStudents(page int, limit int) ([]models.Student, int64, error) {
+func GetAllStudents(page int, limit int) ([]models.Student, error) {
 	var students []models.Student
-	var total int64
-
-	database.DB.Model(&models.Student{}).Count(&total)
 
 	offset := (page - 1) * limit
 
 	result := database.DB.
 		Order("id ASC").
 		Offset(offset).
-		Limit(limit).
+		Limit(limit + 1).
 		Find(&students)
 
 	if result.Error != nil {
-		return nil, 0, result.Error
+		return nil, result.Error
 	}
 
-	return students, total, nil
+	return students, nil
 }
 
 func GetStudentByID(id string) (*models.Student, error) {
